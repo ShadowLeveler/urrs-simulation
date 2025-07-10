@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { motion } from 'framer-motion'
+import { supabase } from './supabaseClient'
 
 const sampleTurn = {
   environment: 'Swamp - Nightfall',
@@ -14,23 +15,30 @@ const sampleTurn = {
     'Ask Lathra Vex why she’s whispering again',
     'Try to remember where you first learned fire magic',
   ],
-};
+}
 
 export default function URRSApp() {
-  const [log, setLog] = useState([]);
-  const [input, setInput] = useState('');
+  const [log, setLog] = useState([])
+  const [input, setInput] = useState('')
 
-  const handleChoice = (choice) => {
-    const entry = `🔹 You chose: ${choice}`;
-    setLog((prev) => [...prev, entry]);
-  };
+  const saveAction = async (text) => {
+    const { error } = await supabase.from('memory_log').insert([{ entry: text }])
+    if (error) console.error('Save error:', error)
+  }
 
-  const handleSubmit = () => {
-    if (!input.trim()) return;
-    const entry = `✍️ Custom action: ${input}`;
-    setLog((prev) => [...prev, entry]);
-    setInput('');
-  };
+  const handleChoice = async (choice) => {
+    const entry = `🔹 You chose: ${choice}`
+    setLog((prev) => [...prev, entry])
+    await saveAction(entry)
+  }
+
+  const handleSubmit = async () => {
+    if (!input.trim()) return
+    const entry = `✍️ Custom action: ${input}`
+    setLog((prev) => [...prev, entry])
+    await saveAction(entry)
+    setInput('')
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-4 font-mono">
@@ -79,5 +87,5 @@ export default function URRSApp() {
         ))}
       </div>
     </div>
-  );
+  )
 }
